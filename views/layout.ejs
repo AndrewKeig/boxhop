@@ -1,0 +1,50 @@
+<html>
+<head>
+<title><%= title %></title>
+<script src="/javascripts/jquery.js"></script>
+<script src="/javascripts/jquery.ui.js"></script>
+<script src="/javascripts/jquery.fitvids.js"></script>
+<script src="/javascripts/socket.io.js"></script>
+<script src="/javascripts/boxhop.js"></script>
+<script type="text/javascript" src="http://cloud.github.com/downloads/malsup/cycle/jquery.cycle.all.latest.js"></script>
+<link rel="stylesheet" href="/stylesheets/style.css"/>
+<script>
+$(document).ready(function(){
+var socket = io.connect('127.0.0.1',{ port: 3000 });
+boxhop.initialise(socket);
+
+$('.nav_item').hover( function () { boxhop.unilluminate(this); }, function () { boxhop.illuminate(this); });
+$('#add_channel_button').hover( function () { boxhop.unilluminate(this); }, function () { boxhop.illuminate(this); });
+$('#channels_nav').toggle( function () { boxhop.show_channels(); }, function () { boxhop.hide_channels(); });
+$('#add_channel_nav').toggle( function () { boxhop.show_add_channel(); }, function () { boxhop.hide_add_channel(); });
+$('#add_channel_button').click( function () { boxhop.add_channel(); });
+$('.channel_item').live("mouseout", function () { boxhop.illuminate(this); });
+$('.channel_item').live("mouseover", function () { boxhop.unilluminate(this); });
+$('.channel_item').live("click", function () { boxhop.playVideo(this); });
+
+//are there more tracks
+socket.on('withcallbackexamplenotused', function( callback ){
+  callback();
+});
+
+socket.on('inChannel', function( channel ){
+  //var find = '#nav #' + channel;
+  //$(find).attr('class', 'select')
+});
+
+//handles messages sent from the server
+socket.on('tracks',function(response) {
+  boxhop.reset();
+  for(track in response.items){
+	boxhop.addVideo(response);
+  };
+  boxhop.show_channels();
+}); 
+
+//send message to server; inform server client is done
+socket.emit('ready', { true:true });
+});
+</script>
+</head>
+<body><%-body%></body>
+</html>

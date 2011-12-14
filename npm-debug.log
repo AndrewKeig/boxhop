@@ -1,0 +1,51 @@
+info it worked if it ends with ok
+verbose cli [ 'C:\\Users\\AIR\\Documents\\Andrew\\projects\\boxhop\\\\node.exe',
+verbose cli   'C:\\Users\\AIR\\Documents\\Andrew\\projects\\boxhop\\node_modules\\npm\\bin\\npm-cli.js',
+verbose cli   'install',
+verbose cli   'calipso',
+verbose cli   '-g' ]
+info using npm@1.1.0-alpha-6
+info using node@v0.6.5
+verbose config file C:\Users\AIR\.npmrc
+verbose config file C:\Users\AIR\Documents\Andrew\projects\boxhop\etc\npmrc
+verbose config file C:\Users\AIR\Documents\Andrew\projects\boxhop\node_modules\npm\npmrc
+verbose mkdir done: C:\Users\AIR\AppData\Roaming\npm 755
+verbose into C:\Users\AIR\AppData\Roaming\npm [ 'calipso' ]
+verbose cache add calipso
+verbose cache add [ 'calipso', null ]
+silly cache add: name, spec, args [ undefined, 'calipso', [ 'calipso', null ] ]
+verbose parsed url { pathname: 'calipso', path: 'calipso', href: 'calipso' }
+info addNamed [ 'calipso', '' ]
+verbose addNamed [ null, '' ]
+verbose GET calipso
+verbose raw, before any munging calipso
+verbose url resolving [ 'https://registry.npmjs.org/', './calipso' ]
+verbose url resolved https://registry.npmjs.org/calipso
+verbose etag "1MIKDV1NS51RQ900FMIZOEU0"
+silly get cb [ 304,
+silly get cb   { server: 'CouchDB/1.1.0 (Erlang OTP/R14B04)',
+silly get cb     etag: '"1MIKDV1NS51RQ900FMIZOEU0"',
+silly get cb     date: 'Wed, 14 Dec 2011 03:57:36 GMT',
+silly get cb     'content-length': '0' } ]
+verbose etag calipso from cache
+verbose mkdir done: C:\Users\AIR\AppData\Roaming\npm-cache\calipso 755
+ERR! Error: No compatible version found: calipso
+ERR! No valid targets found.
+ERR! Perhaps not compatible with your version of node?
+ERR!     at installTargetsError (C:\Users\AIR\Documents\Andrew\projects\boxhop\node_modules\npm\lib\cache.js:429:10)
+ERR!     at C:\Users\AIR\Documents\Andrew\projects\boxhop\node_modules\npm\lib\cache.js:411:17
+ERR!     at Object.saved [as oncomplete] (C:\Users\AIR\Documents\Andrew\projects\boxhop\node_modules\npm\lib\utils\npm-registry-client\get.js:136:7)
+ERR! Report this *entire* log at:
+ERR!     <http://github.com/isaacs/npm/issues>
+ERR! or email it to:
+ERR!     <npm-@googlegroups.com>
+ERR! 
+ERR! System Windows_NT 6.1.7601
+ERR! command "C:\\Users\\AIR\\Documents\\Andrew\\projects\\boxhop\\\\node.exe" "C:\\Users\\AIR\\Documents\\Andrew\\projects\\boxhop\\node_modules\\npm\\bin\\npm-cli.js" "install" "calipso" "-g"
+ERR! cwd C:\Users\AIR\documents\andrew\projects\boxhop
+ERR! node -v v0.6.5
+ERR! npm -v 1.1.0-alpha-6
+ERR! message No compatible version found: calipso
+ERR! message No valid targets found.
+ERR! message Perhaps not compatible with your version of node?
+verbose exit [ 1, true ]
