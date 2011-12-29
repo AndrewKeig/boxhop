@@ -1,5 +1,6 @@
 var config = require('./config/config');
-var channel = require('./channel');
+var channel = require('./core/channel.js');
+var channel_item = require('./core/channel_item.js');
 var mongoose = require('mongoose');
 var user = require('./core/user');
 var express = require('express');
@@ -8,6 +9,7 @@ var util = require('util');
 var http = require('http');
 var events = require("events");
 var io = require('socket.io');
+var parseCookie = require('connect').utils.parseCookie;
 var app = express.createServer();
 var db = mongoose.connect(config.db);
 
@@ -25,8 +27,8 @@ app.configure(function () {
 });
 
 app.configure('development', function () {
-    app.use(express.logger());
-    app.use(express.errorHandler({ dumpExceptions: false, showStack: false }));
+    //app.use(express.logger());
+    //app.use(express.errorHandler({ dumpExceptions: false, showStack: false }));
     app.set('db-uri', config.db);
 });
 
@@ -37,29 +39,23 @@ app.configure('production', function () {
 });
 
 app.get('/', function (req, res) {
-    req.session.message = 'Hello World';
-    console.log(req.session.message);
-    res.render('index', {
-        title: config.title,
-        logo: config.logo
-    });
+    console.log('- box hop request');
+    res.render('index', { title: config.title, logo: config.logo });
 });
 
 app.get('/login', function (req, res) {
-    console.log('request login form');
+    console.log('- request login form');
     if (req.xhr) {
-        res.partial('login', {
-            title: config.title,
-            logo: config.logo
-        });
+        console.log('- sending login form');
+        res.partial('login', { title: config.title, logo: config.logo });
     }
 });
 
 app.post('/login', function (req, res) {
-    console.log('submit login form');
-    user.save(req, function(err){
-        var message = (err) ? 'User details invalid.' : 'User registered.';
-
+    console.log('- submit login form');
+    user.login(req, res, function(err, message){
+        message = (err) ? 'User details invalid.' : message;
+        console.log('- ' + message.toLowerCase());
         if (req.xhr) {
             res.contentType('json');
             res.send({ message:message});
@@ -68,139 +64,92 @@ app.post('/login', function (req, res) {
 });
 
 app.get('/addchannel', function (req, res) {
-    console.log('request add channel form');
+    console.log('- request add channel form for : ' + req.session.user);
     if (req.xhr) {
-        res.partial('addchannel', {
-            title: config.title,
-            logo: config.logo
-        });
+        if (req.session.user == null) {
+            console.log('- sending login form');
+            res.partial('login', { title: config.title, logo: config.logo });
+        } else {
+            console.log('- sending add channel form');
+            res.partial('addchannel', { title: config.title, logo: config.logo });
+        }
     }
 });
 
 app.post('/addchannel', function (req, res) {
-    console.log('submit add channel form');
-    console.log(req.session.user);
+    console.log('- submit add channel ' + req.body.add_channel_text + ' requested for : ' + req.session.user._id);
+    var request = channel.request(req.body.add_channel_text);
 
-        console.log('calling for channel: '+ req.body.add_channel_text);
-        var request = channel.request(req.body.add_channel_text);
+    console.log('- channel requested: ' + request.query);
+    request.addListener("response", function (response) {
+        var body = "";
 
-        request.addListener("response", function (response) {
-            var body = "";
+        response.addListener("data", function (data) {
+            body += data;
+        });
 
-            response.addListener("data", function (data) {
-                body += data;
-            });
-
-            //send tracks to client
-            response.addListener("end", function (end) {
-                var tracks = channel.parse(body);
-                user.add_channel(req, res, tracks, function(err){
-
-                    var message = (err) ? 'Channel not saved.' : 'channel saved.';
-                    if (tracks.length > 0) {
-                        console.log('sending tracks to client for:');
-                        console.log(tracks.channel);
-                        //client.emit('tracks', { items: tracks, 'channel': tracks.channel});
-
-                        if (req.xhr) {
-                            res.contentType('json');
-                            res.send({ message:message});
-                        }
+        response.addListener("end", function (end) {
+            var current_channel = channel.parse(body);
+            user.add_channel(req, current_channel, function(err){
+                var message = (err) ? 'Channel not saved.' : 'channel saved.';
+                console.log('- ' + message);
+                if (current_channel.length > 0) {
+                    if (req.xhr) {
+                        res.contentType('json');
+                        res.send({ message:message});
                     }
-                });
+                }
             });
         });
-        request.end();
+    });
+    request.end();
 });
-
-//app.get('/channel/:tag', function(req, res){
-//  selectedChannel = req.params.tag;
-//  res.render('index', {
-//    title: req.params.tag,
-//    logo: config.logo
-//  });
-//});
 
 app.listen(config.port);
 io = io.listen(app);
 
-
-var parseCookie = require('connect').utils.parseCookie;
-
 io.set('authorization', function (data, accept) {
-    // check if there's a cookie header
+    console.log('- set authorisation details');
     if (data.headers.cookie) {
-        // if there is, parse the cookie
         data.cookie = parseCookie(data.headers.cookie);
-        // note that you will need to use the same key to grad the
-        // session id, as you specified in the Express setup.
         data.sessionID = data.cookie['express.sid'];
+        console.log('- authorised as session id : ' + data.sessionID);
     } else {
-       // if there isn't, turn down the connection with a message
-       // and leave the function.
        return accept('No cookie transmitted.', false);
     }
-    // accept the incoming connection
     accept(null, true);
 });
 
 io.sockets.on('connection', function (client) {
-    //client has connected
-    client.on('ready', function (message) {
-        console.log('client ready to go');
+    client.on('box_hop_ready', function (message) {
+        console.log('- box hop client ready to go.');
         console.log(message);
     });
 
-    //client has request channel results
     client.on('channel', function (req) {
-        console.log('A socket with sessionID ' + client.handshake.sessionID + ' called!');
-
-        //this shows how to client; passing a callback
-        //io.sockets.in(channels.selected.name)
-        // .emit('inChannel', channels.selected.name);
-
-        user.exists(client.handshake.sessionID, function(me, err){
+        console.log('- handshake: ' + client.handshake);
+        console.log('- a box hop client with session_id ' + client.handshake.sessionID + ' requested their channels');
+        user.find_by_id(client.handshake.sessionID, function(err, me){
             if (err) {
-                throw err;
+                console.log('- fatal error; unable to find user: ' + client.handshake.sessionID);
             }
-            //console.log('i exist?')
-            //console.log(me);
-            //var ch = me.channels[0].name;
-            //console.log(me.channels.length);
-
-           // for(ch in me.channels){
+            console.log('- found user start channel sending process for: ' + me);
             for (var i = 0, len = me.channels.length; i < len; i++) {
-                //console.log(me.channels[i].name);
-                //console.log(me.channels[i].feed);
-                //get channel request
-                //var request = channel.request(me.channels[i].name);
-                //request.addListener("response", function (response) {
-                //    var body = "";
-
-                 //   response.addListener("data", function (data) {
-                 //       body += data;
-                 //   });
-
-                    //send tracks to client
-                 //   response.addListener("end", function (end) {
-                        //var tracks = channel.parse(body);
-
-                    if (me.channels[i].feed.length > 0) {
-                        console.log('sending tracks to client for:');
-                        console.log(me.channels[i].name);
-                        client.emit('tracks', { items: me.channels[i].feed, 'channel': me.channels[i].name, 'id': 'channel'+i});
-                    }
-             //   });
-                //});
+                if (me.channels[i].feed.length > 0) {
+                    console.log('- sending channel to client for: ' + me.channels[i].name);
+                    //channel_item.id = i;
+                    //channel_item.items = me.channels[i].feed;
+                    //channel_item.channel = me.channels[i].name
+                    //client.emit('add_videos_to_channel', channel_item);
+                    client.emit('add_videos_to_channel', { items: me.channels[i].feed, 'channel': me.channels[i].name, 'id': i});
+                }
             };
-        //request.end();
         });
     });
 
-  //when a client has disconnected; i.e. closed browser
     client.on('disconnect', function () {
-        console.log('Client Disconnected..');
+        console.log('- client has closed browser/disconnected from box hop');
     });
 });
 
-console.log("Express on port %d in %s mode", app.address().port, app.settings.env);
+console.log("- box hop express on port %d in %s mode", app.address().port, app.settings.env);

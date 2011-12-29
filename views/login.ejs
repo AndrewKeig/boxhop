@@ -1,8 +1,7 @@
-  <p>Please provide the authentication credentials to continue:</p>
-   <section id="loginForm">
-   <form method="POST" action="/login" enctype="application/x-www-form-urlencoded" id="login_form" name="login_form">
-   <input type="text" name="user[username]" id="user[username]" size="25" class="textbox" required/>
-   Password: <input type="password" name="user[password]" id="user[password]" size="25" class="textbox" required/>
-   <div id="login_button" class="button opacity">> login</div>
-   </form>
-   </section>
+<div id="login_container">
+  <form method="POST" action="/login" enctype="application/x-www-form-urlencoded" id="login_form" name="login_form">
+    <input type="text" name="user[username]" id="user[username]" size="25" class="username textbox" required/>
+    <input type="password" name="user[password]" id="user[password]" size="25" class="password textbox" required/>
+    <span id="login_button" class="button opacity">> login</span>
+  </form>
+</div>

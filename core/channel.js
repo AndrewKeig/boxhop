@@ -9,7 +9,6 @@ var channel = {
     searchTerm: '',
     request: function (ch) {
         this.searchTerm = ch;
-        console.log(encodeURI(this.query()));
         var videoClient = http.createClient(80, this.host);
         return videoClient.request("GET", encodeURI(this.query()), { "host": this.host });
     },
@@ -18,19 +17,22 @@ var channel = {
     },
     parse: function (body) {
         var feed = [];
-        var tracks = JSON.parse(body).feed.entry;
+        var channel_items = JSON.parse(body).feed.entry;
         
         feed.channel = this.searchTerm;
-        if (tracks.length > 0) {
-            for (track in tracks) {
+        if (channel_items.length > 0) {
+            for (item in channel_items) {
                 feed.push({
-                    id: track,
-                    imageUrl: tracks[track].media$group.media$thumbnail[0].url,
-                    videoUrl: (tracks[track].media$group.media$content != undefined) ? tracks[track].media$group.media$content[0].url + '&wmode=transparent&autoplay=1' : ''
+                    id: item,
+                    imageUrl: channel_items[item].media$group.media$thumbnail[0].url,
+                    videoUrl: this.apply_attributes(channel_items[item])
                 });
             }
         }
         return feed;
+    },
+    apply_attributes: function(item) {
+        return (item.media$group.media$content != undefined) ? item.media$group.media$content[0].url + '&wmode=transparent&autoplay=1' : ''
     }
 };
 
