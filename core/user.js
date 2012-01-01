@@ -80,6 +80,7 @@ exports.add_channel = function (req, feed, callback) {
             media.id = feed[item].id;
             media.imageUrl = feed[item].imageUrl;
             media.videoUrl = feed[item].videoUrl;
+            media.title = feed[item].title;
             new_channel.feed.push(media);
         }
 

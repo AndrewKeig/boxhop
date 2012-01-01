@@ -12,8 +12,6 @@ var boxhop = {
         this.hide_login_form();
         this.hide_video();
         this.hide_message();
-        //this.clear_channels();
-        //this.hide_channels();
     },
     show_login_form: function () {
         this.reset();
@@ -82,21 +80,41 @@ var boxhop = {
     add_videos_to_channel: function (response) {
         var channel_video_id = '#channel_' + response.id + '_video';
         var title_title_id = '#channel_' + response.id + '_title';
+        $(channel_video_id).append('<div class="slides_container"></div>');
+
         for(track in response.items){
-            $(channel_video_id).append('<img src="' + response.items[track].imageUrl + '" width='200' height='200' title="this is a test" data-val="' + response.items[track].videoUrl + '" />');
-            //$(channel_video_id).cycle({ fx:'scrollDown', easing: 'easeInOutBack', direction: 'right', timeout: 5000, speed: 500, before: boxhop.on_before(title_title_id,response.channel) });
+            var item = item + '<div class="slide"><img src="' + response.items[track].imageUrl + '" width="200" height="200" title="' + response.items[track].title  + '" data-val="' + response.items[track].videoUrl + '" />';
+            var item = item + '<div class="caption"><p>' + response.items[track].title + '</p></div></div>';
+            $(channel_video_id + ' .slides_container').append(item);
         };
-        $(channel_video_id).slicebox({slideshow: false});
 
-        $('.channels td img').live("click", function () { boxhop.play_video(this); });
+        $(channel_video_id).slides({
+            preload: true,
+            pagination: false,
+            generatePagination: false,
+            preloadImage: '../images/loading.gif',
+            play: 0,
+            hoverPause: true,
+            animationStart: function(current){
+                $('.caption').animate({
+                    bottom:-35
+                },100);
+            },
+            animationComplete: function(current){
+                $('.caption').animate({
+                    bottom:0
+                },200);
+            },
+            slidesLoaded: function() {
+                $('.caption').animate({
+                    bottom:0
+                },200);
+            }
+        });
 
+        $('#').live("click", function () { boxhop.play_video(this); });
         $('#channel_container').show();
         this.hide_loading();
-    },
-    on_before: function(id,channel) {
-        $(id).html(channel);
-        //alert(channel);
-        //alert(this.src);
     },
     play_video: function (me) {
         this.reset();

@@ -8,13 +8,8 @@ iframe { width: 100%; height:100%; }
 .channels td {
     border: 1px solid #fff;
     width:200px;
-    height:200px;
+    height:240px;
     padding: 2px;
-}
-
-.channels td img{
- 
-    cursor: pointer;
 }
 
 /* navigation */

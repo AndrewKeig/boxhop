@@ -4,7 +4,8 @@ var mongoose = require('mongoose'),
 
 var media = new Schema({
     imageUrl     : String,
-    videoUrl     : String
+    videoUrl     : String,
+    title        : String
 });
 
 var channel = new Schema({

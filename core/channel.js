@@ -25,7 +25,8 @@ var channel = {
                 feed.push({
                     id: item,
                     imageUrl: channel_items[item].media$group.media$thumbnail[0].url,
-                    videoUrl: this.apply_attributes(channel_items[item])
+                    videoUrl: this.apply_attributes(channel_items[item]),
+                    title: channel_items[item].media$group.media$title.$t
                 });
             }
         }
