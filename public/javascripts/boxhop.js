@@ -93,7 +93,7 @@ var boxhop = {
             pagination: false,
             generatePagination: false,
             preloadImage: '../images/loading.gif',
-            play: 0,
+            play: 500,
             hoverPause: true,
             animationStart: function(current){
                 $('.caption').animate({
