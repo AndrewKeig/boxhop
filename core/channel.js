@@ -5,7 +5,7 @@ var channel = {
     name: 'youtube',
     host: 'gdata.youtube.com',
     startIndex: 1,
-    maxResults: 12,
+    maxResults: 24,
     searchTerm: '',
     request: function (ch) {
         this.searchTerm = ch;
@@ -33,7 +33,7 @@ var channel = {
         return feed;
     },
     apply_attributes: function(item) {
-        return (item.media$group.media$content != undefined) ? item.media$group.media$content[0].url + '&wmode=transparent&autoplay=1' : ''
+        return (item.media$group.media$content != undefined) ? item.media$group.media$content[0].url + '&controls=0&showinfo=0&wmode=transparent&autoplay=1&rel=0' : ''
     }
 };
 

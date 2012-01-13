@@ -1,0 +1,7 @@
+<% videos.forEach(function(video){
+ if(video.imageUrl != undefined) {%>
+<span class="video opacity">
+<img src="<%= video.imageUrl %>" width="150" height="150" title="<%= video.title %>" data-val="<%= video.videoUrl %>" />
+<span class="caption"><%= video.title %></span>
+</span>
+<% }}) %>

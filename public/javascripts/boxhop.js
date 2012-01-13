@@ -12,6 +12,7 @@ var boxhop = {
         this.hide_login_form();
         this.hide_video();
         this.hide_message();
+        this.hide_channel_videos();
     },
     show_login_form: function () {
         this.reset();
@@ -36,7 +37,7 @@ var boxhop = {
             url: '/login/',
             success: function (response) {
                 boxhop.reset();
-                $('#message_container').html(response.message);
+                $('#message_container').html(response);
                 $('#message_container').show();
             }
         });
@@ -67,7 +68,7 @@ var boxhop = {
             url: '/addchannel/',
             success: function (response) {
                 boxhop.reset();
-                $('#message_container').html(response.message);
+                $('#message_container').html(response);
                 $('#message_container').show();
             }
         });
@@ -75,50 +76,37 @@ var boxhop = {
     show_channels: function () {
         this.reset();
         this.show_loading();
-        this.socket.emit('channel', { channel: 'node.js' });
-    },
-    add_videos_to_channel: function (response) {
-        var channel_video_id = '#channel_' + response.id + '_video';
-        var title_title_id = '#channel_' + response.id + '_title';
-        $(channel_video_id).append('<div class="slides_container"></div>');
-
-        for(track in response.items){
-            var item = item + '<div class="slide"><img src="' + response.items[track].imageUrl + '" width="200" height="200" title="' + response.items[track].title  + '" data-val="' + response.items[track].videoUrl + '" />';
-            var item = item + '<div class="caption"><p>' + response.items[track].title + '</p></div></div>';
-            $(channel_video_id + ' .slides_container').append(item);
-        };
-
-        $(channel_video_id).slides({
-            preload: true,
-            pagination: false,
-            generatePagination: false,
-            preloadImage: '../images/loading.gif',
-            play: 500,
-            hoverPause: true,
-            animationStart: function(current){
-                $('.caption').animate({
-                    bottom:-35
-                },100);
-            },
-            animationComplete: function(current){
-                $('.caption').animate({
-                    bottom:0
-                },200);
-            },
-            slidesLoaded: function() {
-                $('.caption').animate({
-                    bottom:0
-                },200);
+        $.ajax({
+            type: 'GET',
+            dataType: 'html',
+            contentType: 'application/html; charset=utf-8',
+            url: '/channels/',
+            success: function (response) {
+                $("#channel_container").html(response);
+                $("#channel_container").show();
             }
         });
-
-        $('#').live("click", function () { boxhop.play_video(this); });
-        $('#channel_container').show();
+        this.hide_loading();
+    },
+    show_channel_videos: function (me) {
+        var id = $(me).attr('data-val');
+        this.reset();
+        this.show_loading();
+        $.ajax({
+            type: 'GET',
+            dataType: 'html',
+            contentType: 'application/html; charset=utf-8',
+            url: '/channel/'+id,
+            success: function (response) {
+                $("#channel_video_container").html(response);
+                $("#channel_video_container").show();
+            }
+        });
         this.hide_loading();
     },
     play_video: function (me) {
         this.reset();
-        $('#video').attr('src', $(me).attr('data-val'));
+        $('#video').attr('src', $(me).find('img').attr('data-val'));
         this.show_video();
     },
     hide_login_form: function () {
@@ -135,6 +123,9 @@ var boxhop = {
     },
     hide_channels: function () {
         $('#channel_container').hide();
+    },
+    hide_channel_videos: function () {
+        $('#channel_video_container').hide();
     },
     show_loading: function () {
         $('#loading').show();

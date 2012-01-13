@@ -6,8 +6,6 @@
 <script src="/javascripts/jquery.fitvids.js"></script>
 <script src="/javascripts/socket.io.js"></script>
 <script src="/javascripts/boxhop.js"></script>
-<script src="/javascripts/slides.min.jquery.js"></script>
-<link rel="stylesheet" href="/stylesheets/slides.css"/>
 <link rel="stylesheet" href="/stylesheets/style.css"/>
 <script>
 $(document).ready(function(){
@@ -21,14 +19,16 @@ $('#login_button').live({mouseenter:function(){ boxhop.un_illuminate(this); },mo
 $('#login_button').live("click", function () { boxhop.submit_login_form(); });
 $('#add_channel_button').live("click", function () { boxhop.submit_add_channel_form(); });
 $('#add_channel_button').live({mouseenter:function(){ boxhop.un_illuminate(this); },mouseleave:function(){ boxhop.illuminate(this); }});
-$('.channels td img').live("mouseout", function () { boxhop.illuminate(this); });
-$('.channels td img').live("mouseover", function () { boxhop.un_illuminate(this); });
-$('.channels td img').live("click", function () { boxhop.play_video(this); });
+$('.video').live("click", function () { boxhop.play_video(this); });
+$('.video').live({mouseenter:function(){ boxhop.un_illuminate(this); },mouseleave:function(){ boxhop.illuminate(this); }});
+$('.channel').live({mouseenter:function(){ boxhop.un_illuminate(this); },mouseleave:function(){ boxhop.illuminate(this); }});
+$('.channel').live("click", function () { boxhop.show_channel_videos(this); });
+
 
 //are there more tracks
-socket.on('withcallbackexamplenotused', function( callback ){
-  callback();
-});
+//socket.on('withcallbackexamplenotused', function( callback ){
+//  callback();
+//});
 
 //socket.on('inChannel', function( channel ){
   //var find = '#nav #' + channel;
@@ -36,9 +36,9 @@ socket.on('withcallbackexamplenotused', function( callback ){
 //});
 
 //displays a channel on the client
-socket.on('add_videos_to_channel', function(response) {
-    boxhop.add_videos_to_channel(response);
-}); 
+//socket.on('add_videos_to_channel', function(response) {
+//    boxhop.add_videos_to_channel(response);
+//});
 
 //send message to server; inform server client is done
 socket.emit('box_hop_ready', { true:true });
