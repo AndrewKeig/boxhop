@@ -5,55 +5,52 @@ var boxhop = {
         this.reset();
     },
     reset: function () {
-        this.hide_add_channel_form();
-        this.hide_channels();
+        this.hide_content();
         this.hide_loading();
-        this.clear_add_channel_form();
-        this.hide_login_form();
         this.hide_video();
-        this.hide_message();
-        this.hide_channel_videos();
     },
     show_login_form: function () {
         this.reset();
+        this.show_loading();
         $.ajax({
             type: 'GET',
             dataType: 'html',
             contentType: 'application/html; charset=utf-8',
             url: '/login/',
             success: function (response) {
-                $("#content_container").html(response);
-                $("#content_container").show();
+                boxhop.show_content(response);
             }
         });
+        this.hide_loading();
     },
     submit_login_form: function () {
         var post_form = $('#login_form');
         var data = post_form.serialize();
+        this.reset();
         this.show_loading();
         $.ajax({
             type: 'POST',
             data: data,
             url: '/login/',
             success: function (response) {
-                boxhop.reset();
-                $('#message_container').html(response);
-                $('#message_container').show();
+                boxhop.show_content(response);
             }
         });
+        this.hide_loading();
     },
     show_add_channel_form: function () {
         this.reset();
+        this.show_loading();
         $.ajax({
             type: 'GET',
             dataType: 'html',
             contentType: 'application/html; charset=utf-8',
             url: '/addchannel/',
             success: function (response) {
-                $("#content_container").html(response);
-                $("#content_container").show();
+                boxhop.show_content(response);
             }
         });
+        this.hide_loading();
     },
     submit_add_channel_form: function () {
         //var channel = $('#add_channel_text').val();
@@ -67,11 +64,10 @@ var boxhop = {
             data: data,
             url: '/addchannel/',
             success: function (response) {
-                boxhop.reset();
-                $('#message_container').html(response);
-                $('#message_container').show();
+                boxhop.show_content(response);
             }
         });
+        this.hide_loading();
     },
     show_channels: function () {
         this.reset();
@@ -82,8 +78,7 @@ var boxhop = {
             contentType: 'application/html; charset=utf-8',
             url: '/channels/',
             success: function (response) {
-                $("#channel_container").html(response);
-                $("#channel_container").show();
+                boxhop.show_content(response);
             }
         });
         this.hide_loading();
@@ -98,8 +93,7 @@ var boxhop = {
             contentType: 'application/html; charset=utf-8',
             url: '/channel/'+id,
             success: function (response) {
-                $("#channel_video_container").html(response);
-                $("#channel_video_container").show();
+                boxhop.show_content(response);
             }
         });
         this.hide_loading();
@@ -109,11 +103,19 @@ var boxhop = {
         $('#video').attr('src', $(me).find('img').attr('data-val'));
         this.show_video();
     },
-    hide_login_form: function () {
-        $("#content_container").hide();
+    show_loading: function () {
+        $('#loading').show();
     },
-    hide_add_channel_form: function () {
-        $('#content_container').hide();
+    hide_loading: function () {
+        $('#loading').hide();
+    },
+    show_content: function (content) {
+        $("#content_container").html(content);
+        $("#content_container").show();
+    },
+    hide_content: function () {
+        $("#content_container").html('');
+        $("#content_container").hide();
     },
     show_video: function () {
         $('#video_container').show();
@@ -121,36 +123,15 @@ var boxhop = {
     hide_video: function () {
         $('#video_container').hide();
     },
-    hide_channels: function () {
-        $('#channel_container').hide();
+    illuminate: function (me) {
+        $(me).addClass("opacity");
     },
-    hide_channel_videos: function () {
-        $('#channel_video_container').hide();
-    },
-    show_loading: function () {
-        $('#loading').show();
-    },
-    hide_loading: function () {
-        $('#loading').hide();
-    },
-    hide_message: function () {
-        $('#message_container').hide();
-    },
-    clear_channels: function () {
-        $('#channel_container').html('');
-    },
-    clear_add_channel_form: function () {
-        $('#add_channel_text').val('');
-    },
-    illuminate: function (item) {
-        $(item).addClass("opacity");
-    },
-    un_illuminate: function (item) {
-        $(item).removeClass("opacity");
+    un_illuminate: function (me) {
+        $(me).removeClass("opacity");
     },
     toggle_login_form: function (){
         if ($('#login_container').is(":visible")) {
-            this.hide_login_form();
+            this.hide_content();
         }
         else {
             this.show_login_form();
@@ -158,7 +139,7 @@ var boxhop = {
     },
     toggle_channels: function (){
         if ($('#channel_container').is(":visible")) {
-            this.hide_channels();
+            this.hide_content();
         }
         else {
             this.show_channels();
@@ -166,7 +147,7 @@ var boxhop = {
     },
     toggle_add_channel_form: function (){
         if ($('#add_channel_container').is(":visible")) {
-            this.hide_add_channel_form();
+            this.hide_content();
         }
         else {
             this.show_add_channel_form();

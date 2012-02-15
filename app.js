@@ -80,14 +80,16 @@ app.get('/addchannel', function (req, res) {
 });
 
 app.get('/channels', function (req, res) {
-    console.log('- a box hop client with session_id ' + req.session.user.sessionId + ' requested their channels');
+    console.log('- a box hop client requested channels');
 
     if (req.xhr) {
-        if (req.session.user == null) {
+        if (req.session.user == undefined) {
             console.log('- sending login form');
             res.partial('login', { title: config.title, logo: config.logo });
             return;
         }
+
+        console.log('- a box hop client with session_id ' + req.session.user.sessionId + ' requested their channels');
 
         user.find_by_id(req.session.user.sessionId, function(err, me){
             if (err) {
@@ -121,8 +123,6 @@ app.post('/addchannel', function (req, res) {
                 console.log('- ' + message);
                 if (current_channel.length > 0) {
                     if (req.xhr) {
-                        //res.contentType('json');
-                        //res.send({ message:message});
                         res.partial('message', { title: config.title, logo: config.logo, message: message });
                     }
                 }
@@ -159,11 +159,11 @@ io.set('authorization', function (data, accept) {
 });
 
 app.get('/channel/:id', function (req, res) {
-    console.log(req.params.id);
+    console.log('- channel requested ' + req.params.id);
     console.log('- a box hop client with session_id ' + req.session.user.sessionId + ' requested a channel:' + req.params.id);
 
     if (req.xhr) {
-        if (req.session.user == null) {
+        if (req.session.user.sessionId == null) {
             console.log('- sending login form');
             res.partial('login', { title: config.title, logo: config.logo });
             return;
@@ -176,8 +176,10 @@ app.get('/channel/:id', function (req, res) {
             }
             else {
                 console.log('- found user start channel sending process for: ' + me);
-                var channel = _.find(me.channels, function(channel){ return channel._id == req.params.id; });
-                console.log(channel);
+                var channel = _.find(me.channels, function(channel){
+                    return channel._id == req.params.id;
+                });
+                console.log('- channel found: ' + channel);
                 res.partial('videos', { title: config.title, logo: config.logo, videos: channel.feed });
             }
         });
@@ -207,44 +209,10 @@ io.sockets.on('connection', function (client) {
 
     client.on('channel', function (req) {
         console.log('- a box hop client with session_id ' + client.handshake.sessionID + ' requested their channel');
-        user.find_by_id(client.handshake.sessionID, function(err, me){
-            if (err) {
-                console.log('- fatal error; unable to find user: ' + client.handshake.sessionID);
-                client.emit('add_videos_to_channel', {});
-                return;
-            }
-            else {
-                console.log('- found user start channel sending process for: ' + req.id);
-                console.log('- sending ' + me.channels.length + ' channels')
-                for (var i = 0, len = me.channels.length; i < len; i++) {
-                    if (me.channels[i].feed.length > 0 && req.id == me.channels[i]._id) {
-                        console.log('- sending channel to client for: ' + me.channels[i].name);
-                        client.emit('add_videos_to_channel', { items: me.channels[i].feed, 'channel': me.channels[i].name, 'id': i});
-                    }
-                };
-            }
-        });
-    });
-
-    client.on('channels', function (req) {
-        console.log('- a box hop client with session_id ' + client.handshake.sessionID + ' requested their channels');
-        user.find_by_id(client.handshake.sessionID, function(err, me){
-            if (err) {
-                console.log('- fatal error; unable to find user: ' + client.handshake.sessionID);
-                client.emit('add_channels', {});
-                return;
-            }
-            else {
-                console.log('- found user start channel sending process for: ' + me);
-                console.log('- sending ' + me.channels.length + ' channels')
-                client.emit('add_channels', { channels: me.channels});
-            }
-        });
     });
 
     client.on('disconnect', function () {
         console.log('- client has closed browser/disconnected from box hop');
-        // clear the socket interval to stop refreshing the session
         clearInterval(intervalID);
     });
 });
