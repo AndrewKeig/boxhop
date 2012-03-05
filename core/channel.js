@@ -6,19 +6,22 @@ var channel = {
     host: 'gdata.youtube.com',
     startIndex: 1,
     maxResults: 24,
-    searchTerm: '',
     request: function (ch) {
-        this.searchTerm = ch;
-        var videoClient = http.createClient(80, this.host);
-        return videoClient.request("GET", encodeURI(this.query()), { "host": this.host });
-    },
-    query: function () {
-        return '/feeds/api/videos?vq=' + this.searchTerm + '&orderby=published&alt=json&rel=0&start-index=' + this.startIndex + '&max-results=' + this.maxResults;
+        var query = '/feeds/api/videos?vq=' + ch + '&orderby=published&alt=json&rel=0&start-index=' + this.startIndex + '&max-results=' + this.maxResults;
+
+        var options = {
+            host: this.host,
+            port: 80,
+            agent: false,
+            path: encodeURI(query)
+        };
+
+        return options;
     },
     parse: function (body) {
         var feed = [];
         var channel_items = JSON.parse(body).feed.entry;
-        
+
         feed.channel = this.searchTerm;
         if (channel_items.length > 0) {
             for (item in channel_items) {

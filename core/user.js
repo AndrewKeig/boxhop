@@ -25,6 +25,7 @@ exports.find_by_id = function (id, callback) {
 exports.find_by_username = function (username, callback) {
     console.log('- find by username: ' + username);
     User.findOne({username:username}, function(err, user) {
+
         if (err) {
             callback(err);
             return;
@@ -42,10 +43,10 @@ exports.find_by_username = function (username, callback) {
     });
 }
 
-
 exports.login = function (req, res, callback) {
     console.log('- login user: ' + req.body.user.username);
     this.find_by_username(req.body.user.username, function(err, user) {
+
         if (err) {
             callback(err);
             return;
@@ -84,8 +85,8 @@ exports.login = function (req, res, callback) {
 }
 
 exports.add_channel = function (req, feed, callback) {
-    console.log('- user ' + req.session.user._id + ' would like to add channel : ' + req.body.add_channel_text);
-    this.find_by_id(req.session.id, function(err, user) {
+    console.log('- user ' + req.session.user.sessionId + ' would like to add channel : ' + req.body.add_channel_text);
+    this.find_by_id(req.session.user.sessionId, function(err, user) {
         if (err) {
             callback(err);
             return;
@@ -96,12 +97,14 @@ exports.add_channel = function (req, feed, callback) {
 
         console.log('- adding items to user channel');
         for (item in feed) {
+            if (feed[item] != undefined) {
             var media = new Media();
             media.id = feed[item].id;
             media.imageUrl = feed[item].imageUrl;
             media.videoUrl = feed[item].videoUrl;
             media.title = feed[item].title;
             new_channel.feed.push(media);
+            }
         }
 
         user.channels.push(new_channel);
