@@ -17,22 +17,19 @@ module.exports = function SocketIo(express, session) {
     });
 
     io.set('authorization', function(handshakeData, ack) {
-        console.log('- set authorisation details');
-
         if (!handshakeData.headers.cookie) {
             return ack('No cookie transmitted.', false);
         };
-
-        var cookies = parseCookie(handshakeData.headers.cookie);
-        session.get(cookies['express.sid'], function(err, sessionData) {
+        handshakeData.cookie = parseCookie(handshakeData.headers.cookie);
+        handshakeData.sessionId = handshakeData.cookie['connect.sid'];
+        console.log('- session id: ' + handshakeData.sessionId);
+        session.get(handshakeData.sessionId, function(err, sessionData) {
             handshakeData.session = sessionData || {};
-            handshakeData.sessionId = cookies['express.sid']|| null;
             ack(err, err ? false : true);
         });
     });
 
     io.sockets.on('connection', function(client) {
-
         var hs = client.handshake;
         console.log('- a socket with sessionId ' + hs.sessionId + ' connected!');
         var intervalID = setInterval(function () {

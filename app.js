@@ -14,10 +14,15 @@ var http = require('http');
 var events = require("events");
 var app = express.createServer();
 var db = mongoose.connect(config.db);
-var MemoryStore = express.session.MemoryStore;
-var sessionStore = new MemoryStore();
-var Session = require('connect').middleware.session.Session;
+var mongoStore = require('connect-mongo');
+var mongoSessionConfig = require('./config/mongo_config');
+var sessionStore = new mongoStore(mongoSessionConfig.db);
 var _ = require('underscore')._;
+
+//var MemoryStore = express.session.MemoryStore;
+//var sessionStore = new MemoryStore();
+//var Session = require('connect').middleware.session.Session;
+
 
 app.configure(function () {
     app.set('views', __dirname + config.view_path);
@@ -25,12 +30,18 @@ app.configure(function () {
     app.use(express.favicon());
     app.use(express.bodyParser());
     app.use(express.cookieParser());
-    app.use(express.session({store: sessionStore, secret: 'secret', key: 'express.sid'}));
+    //app.use(express.session({store: sessionStore, secret: 'secret', key: 'express.sid'}));
+    app.use(express.session({
+        secret: mongoSessionConfig.secret,
+        maxAge: new Date(Date.now() + 3600000),
+        store: sessionStore
+    }));
     app.use(express.methodOverride());
     app.use(app.router);
 });
 
 app.configure('development', function () {
+    process.env.NODE_ENV = 'development'
     //app.use(express.logger());
     //app.use(express.errorHandler({ dumpExceptions: false, showStack: false }));
     app.use(express.static(__dirname + config.public_path));
@@ -38,6 +49,7 @@ app.configure('development', function () {
 });
 
 app.configure('production', function () {
+    process.env.NODE_ENV = 'production';
     app.use(express.logger());
     app.use(express.errorHandler());
     app.use(express.static(__dirname + '/public', { maxAge: 31557600000 }));
@@ -71,4 +83,4 @@ var socketIo = new require('./core/socket_handler.js')(app, sessionStore);
 //run node in production
 //NODE_ENV=production node server.js
 
-console.log('- box hop express in ' + process.env.NODE_ENV || 'development' + ' on port %d in %s mode', app.address().port, app.settings.env);
+console.log('- box hop express on port %d in %s mode', app.address().port, app.settings.env);

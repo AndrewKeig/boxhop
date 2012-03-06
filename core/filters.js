@@ -4,11 +4,9 @@ var util = require('util');
 exports.IsUserLoggedIn = function (req, res, next) {
     console.log('- is user logged in: ' + util.inspect(req.session));
     if (req.session.user == null || req.session.user.sessionId == undefined) {
-        console.log('help --------');
         next(new errors.IsNotLoggedIn);
     }
     else {
-        console.log('help2 --------');
         next();
     }
 };
@@ -22,7 +20,3 @@ exports.IsAjaxRequest = function (req, res, next) {
         next();
     }
 };
-
-//module.exports = IsAjaxRequest;
-//module.exports = IsUserLoggedIn;
-//module.exports.AllFilters = [IsUserLoggedIn, IsAjaxRequest];
